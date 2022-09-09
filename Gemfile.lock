@@ -83,6 +83,7 @@ GEM
     io-console (0.5.11)
     irb (1.4.1)
       reline (>= 0.3.0)
+    jwt (2.5.0)
     loofah (2.18.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -151,6 +152,8 @@ GEM
     timeout (0.3.0)
     tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
+    warden (1.2.9)
+      rack (>= 2.0.9)
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
@@ -162,10 +165,12 @@ PLATFORMS
 DEPENDENCIES
   bootsnap
   debug
+  jwt (~> 2.5)
   pg (~> 1.1)
   puma (~> 5.0)
   rails (~> 7.0.3, >= 7.0.3.1)
   tzinfo-data
+  warden (~> 1.2, >= 1.2.9)
 
 RUBY VERSION
    ruby 3.1.2p20
