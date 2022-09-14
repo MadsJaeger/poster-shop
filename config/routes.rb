@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :prices
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Defines the root path route ("/")
@@ -9,4 +10,7 @@ Rails.application.routes.draw do
   post   'auth/sign_in',  controller: :authentication, action: :sign_in
   delete 'auth/sign_out', controller: :authentication, action: :sign_out
   get    'auth/ping',     controller: :authentication, action: :ping
+
+  resources :products
+  resources :prices
 end
