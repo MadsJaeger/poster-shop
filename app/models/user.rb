@@ -12,6 +12,7 @@ class User < ApplicationRecord
   has_secure_password :password, validations: false
 
   has_many :jtis, dependent: :destroy
+  has_many :orders, dependent: :restrict_with_error
 
   validates :email, uniqueness: true, format: { with: EMAIL_REGEX }, allow_blank: false
   with_options if: :password_digest_changed? do |user|

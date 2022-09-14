@@ -101,4 +101,10 @@ class ApplicationController < ActionController::API
   def authenticate_admin!
     forbidden! unless @current_user.admin
   end
+
+  def authenticate_is_owner!
+    return true if @current_user.admin
+    
+    forbidden! unless item.user_id.to_i == @current_user.id
+  end
 end

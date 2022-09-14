@@ -1,10 +1,4 @@
 Rails.application.routes.draw do
-  resources :prices
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
-  # Defines the root path route ("/")
-  # root "articles#index"
-
   # Authentication
   post   'auth/sign_up',  controller: :authentication, action: :sign_up
   post   'auth/sign_in',  controller: :authentication, action: :sign_in
@@ -13,4 +7,5 @@ Rails.application.routes.draw do
 
   resources :products
   resources :prices
+  resources :orders
 end

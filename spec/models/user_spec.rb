@@ -13,6 +13,16 @@ RSpec.describe User, type: :model do
     expect(subject).to be_valid
   end
 
+  it 'cant destroy when having orders' do
+    subject.orders.build
+    subject.save!
+    expect(subject.destroy).to be false
+  end
+
+  it 'converts to json' do
+    expect(subject.as_json).to be_instance_of Hash
+  end
+
   describe 'password' do
     it 'is encrypted' do
       expect(subject.password_digest).to_not eq subject.password
@@ -99,6 +109,11 @@ RSpec.describe User, type: :model do
   end
 
   describe 'email' do 
+    it 'must be given' do
+      subject.email = nil
+      expect(subject).to_not be_valid
+    end
+
     it 'must look like an email' do
       subject.email = 'fool!'
       expect(subject).to_not be_valid
