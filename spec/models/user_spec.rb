@@ -5,7 +5,8 @@ RSpec.describe User, type: :model do
   
   before :each do
     subject.email = 'test@mail.here'
-    subject.password = '1secureValidPwd' 
+    subject.password = '1secureValidPwd'
+    subject.password_confirmation = '1secureValidPwd'
   end
 
   it 'subject is valid' do
@@ -19,6 +20,18 @@ RSpec.describe User, type: :model do
 
     it 'is recognized' do
       expect(subject.password).to eq '1secureValidPwd'
+    end
+
+    it 'must be confirmed' do
+      subject.password_confirmation = nil
+      expect(subject).to_not be_valid
+      expect(subject.errors.size).to be 1
+    end
+
+    it 'must be confirmed and same' do
+      subject.password_confirmation = 'flunk'
+      expect(subject).to_not be_valid
+      expect(subject.errors.size).to be 1
     end
 
     {
@@ -37,6 +50,7 @@ RSpec.describe User, type: :model do
 
         it "#{pwd} is valid password" do
           subject.password = pwd
+          subject.password_confirmation = pwd
           expect(subject).to be_valid
         end
 
@@ -44,9 +58,10 @@ RSpec.describe User, type: :model do
 
         it "#{pwd} is an invalid password" do
           subject.password = pwd
+          subject.password_confirmation = pwd
           expect(subject).to_not be_valid
           expect(subject.errors.size).to be 1
-          error = subject.errors.find { |err| err.attribute == :password }
+          error = subject.errors.first
           type = pwd.nil? ? :blank : :invalid
           expect(error.type).to be type
         end
@@ -55,10 +70,11 @@ RSpec.describe User, type: :model do
     end
 
     it 'changing after create must also comply with regex' do
-      subject.password = '1aA' * 2
       subject.save!
       subject.password = 'invalid'
+      subject.password_confirmation = 'invalid'
       expect(subject).to_not be_valid
+      expect(subject.errors.size).to be 1
     end
   end
 
@@ -86,6 +102,16 @@ RSpec.describe User, type: :model do
     it 'must look like an email' do
       subject.email = 'fool!'
       expect(subject).to_not be_valid
+    end
+
+    it 'dwoncases' do
+      subject.email = 'EMAIL'
+      expect(subject.email).to eq 'email'
+    end
+
+    it 'strips leading and trailing whitespace' do
+      subject.email = " space  \n"
+      expect(subject.email).to eq 'space'
     end
   end
 end
