@@ -27,4 +27,8 @@ class User < ApplicationRecord
   def email=(value)
     super value.to_s.strip.downcase
   end
+
+  def as_json(opts = {})
+    super(**opts.deep_merge({ except: %i[password_digest password_reset_token password_attempts locked_at] }))
+  end
 end
