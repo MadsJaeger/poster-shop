@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_09_09_140947) do
+ActiveRecord::Schema[7.0].define(version: 2022_09_14_105601) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -21,6 +21,16 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_09_140947) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_jtis_on_user_id"
+  end
+
+  create_table "prices", force: :cascade do |t|
+    t.bigint "product_id", null: false
+    t.datetime "from", null: false
+    t.decimal "value", precision: 8, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_id", "from"], name: "index_prices_on_product_id_and_from", unique: true
+    t.index ["product_id"], name: "index_prices_on_product_id"
   end
 
   create_table "products", force: :cascade do |t|
@@ -46,4 +56,5 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_09_140947) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "prices", "products"
 end
