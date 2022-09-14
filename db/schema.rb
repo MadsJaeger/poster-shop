@@ -10,15 +10,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_09_09_090627) do
+ActiveRecord::Schema[7.0].define(version: 2022_09_09_130010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "jtis", primary_key: "jti", id: :string, force: :cascade do |t|
+    t.datetime "exp", null: false, comment: "Expiration of JWT"
+    t.bigint "user_id", null: false
+    t.string "agent", null: false, comment: "HTTP agent of the user when issued"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_jtis_on_user_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "email", null: false
+    t.boolean "admin", default: false
     t.string "password_digest", null: false
-    t.integer "max_tokens", default: 5
+    t.string "password_reset_token", comment: "When locked or password forgot"
+    t.integer "password_attempts", default: 0, comment: "Count of failed attempts signing in with password"
+    t.datetime "locked_at"
+    t.integer "max_tokens", default: 5, comment: "Max allowed simultaneous tokens that can be issued"
+    t.integer "token_duration", default: 900, comment: "Default duration of token in seconds"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
