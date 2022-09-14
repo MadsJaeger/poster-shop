@@ -43,6 +43,20 @@ RSpec.describe ProductsController, type: :controller do
       get :index
       expect(response).to be_successful
     end
+
+    it 'returns products with last price' do
+      product = Product.new valid_attributes
+      product.prices.build(from: DateTime.now - 1.day, value: 5)
+      product.save
+
+      get :index
+      json_product = response.parsed_body.find do |hash|
+        hash['id'].to_i == product.id
+      end
+
+      expect(json_product.keys).to include('price')
+      expect(json_product['price']['value'].to_i).to be 5
+    end
   end
 
   describe 'GET #show' do

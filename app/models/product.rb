@@ -8,4 +8,8 @@ class Product < ApplicationRecord
   def self.with_prices
     where(id: Price.select(:product_id).distinct)
   end
+
+  def as_json(opts = {})
+    super(**opts.deep_merge({ include: :price }))
+  end
 end
