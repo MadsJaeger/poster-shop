@@ -79,6 +79,13 @@ GEM
     diff-lcs (1.5.0)
     digest (3.1.0)
     erubi (1.11.0)
+    factory_bot (6.2.1)
+      activesupport (>= 5.0.0)
+    factory_bot_rails (6.2.0)
+      factory_bot (~> 6.2.0)
+      railties (>= 5.0.0)
+    faker (2.23.0)
+      i18n (>= 1.8.11, < 2)
     globalid (1.0.0)
       activesupport (>= 5.0)
     i18n (1.12.0)
@@ -190,6 +197,8 @@ DEPENDENCIES
   bcrypt (~> 3.1.7)
   bootsnap
   debug
+  factory_bot_rails (~> 6.2)
+  faker (~> 2.23)
   jwt (~> 2.5)
   pg (~> 1.1)
   pry
@@ -198,7 +207,7 @@ DEPENDENCIES
   rspec-rails (~> 5.1, >= 5.1.2)
   tzinfo-data
   warden (~> 1.2, >= 1.2.9)
-  warden-rspec-rails
+  warden-rspec-rails (~> 0.3.0)
 
 RUBY VERSION
    ruby 3.1.2p20
