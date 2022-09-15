@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_09_14_134731) do
+ActiveRecord::Schema[7.0].define(version: 2022_09_14_140417) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -21,6 +21,21 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_14_134731) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_jtis_on_user_id"
+  end
+
+  create_table "order_items", force: :cascade do |t|
+    t.bigint "order_id"
+    t.bigint "user_id", null: false
+    t.bigint "product_id", null: false
+    t.integer "amount"
+    t.bigint "price_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_id", "user_id", "product_id"], name: "index_order_items_on_order_id_and_user_id_and_product_id", unique: true
+    t.index ["order_id"], name: "index_order_items_on_order_id"
+    t.index ["price_id"], name: "index_order_items_on_price_id"
+    t.index ["product_id"], name: "index_order_items_on_product_id"
+    t.index ["user_id"], name: "index_order_items_on_user_id"
   end
 
   create_table "orders", force: :cascade do |t|
@@ -63,6 +78,10 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_14_134731) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "order_items", "orders"
+  add_foreign_key "order_items", "prices"
+  add_foreign_key "order_items", "products"
+  add_foreign_key "order_items", "users"
   add_foreign_key "orders", "users"
   add_foreign_key "prices", "products"
 end
