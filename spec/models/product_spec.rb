@@ -2,10 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Product, type: :model do
   let :subject do
-    Product.new(
-      name: 'Test',
-      description: 'Lipsum'
-    )
+    build(:product, price_count: 0)
   end
 
   describe 'validations' do
