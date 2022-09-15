@@ -2,18 +2,11 @@ require 'rails_helper'
 
 RSpec.describe Price, type: :model do
   before :all do
-    @product = Product.create!(
-      name: 'Test',
-      description: 'Lipsum'
-    )
+    @product = create(:product, price_count: 0)
   end
 
-  let :subject do 
-    Price.new(
-      product: @product,
-      from: DateTime.now - 1.second,
-      value: rand
-    )
+  let :subject do
+    build(:price, product: @product)
   end
 
   describe 'validations' do
@@ -38,12 +31,12 @@ RSpec.describe Price, type: :model do
     end
 
     it 'from must not be in the future' do
-      subject.from += 1.day
+      subject.from = DateTime.now + 1.day
       expect(subject).to_not be_valid
     end
 
     it 'from canot be before 2000' do
-      subject.from = Price::MIN_FROM-1.second
+      subject.from = Price::MIN_FROM - 1.second
       expect(subject).to_not be_valid
     end
 
@@ -60,6 +53,12 @@ RSpec.describe Price, type: :model do
     it 'value cant be exceedingly large' do
       subject.value = 1_000_000
       expect(subject).to_not be_valid
+    end
+
+    it 'cant destroy when order_items exists' do
+      subject.save!
+      create(:order_item, product: @product)
+      expect(subject.destroy).to be false
     end
   end
 
