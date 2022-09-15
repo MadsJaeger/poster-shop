@@ -3,10 +3,8 @@ require 'rails_helper'
 RSpec.describe User, type: :model do
   # pending "add some examples to (or delete) #{__FILE__}"
   
-  before :each do
-    subject.email = 'test@mail.here'
-    subject.password = '1secureValidPwd'
-    subject.password_confirmation = '1secureValidPwd'
+  let :subject do
+    build(:user)
   end
 
   it 'subject is valid' do
@@ -14,8 +12,14 @@ RSpec.describe User, type: :model do
   end
 
   it 'cant destroy when having orders' do
-    subject.orders.build
     subject.save!
+    subject.orders.build
+    expect(subject.destroy).to be false
+  end
+
+  it 'cant destroy when having order_items' do
+    subject.save!
+    subject.order_items.build
     expect(subject.destroy).to be false
   end
 
@@ -29,7 +33,11 @@ RSpec.describe User, type: :model do
     end
 
     it 'is recognized' do
-      expect(subject.password).to eq '1secureValidPwd'
+      expect(subject.password).to eq '!Secure1'
+    end
+
+    it 'authenticates' do
+      expect(subject.authenticate('!Secure1')).to be subject
     end
 
     it 'must be confirmed' do
@@ -89,10 +97,6 @@ RSpec.describe User, type: :model do
   end
 
   describe 'max_tokens' do
-    before :each do 
-      subject.email = ''
-    end
-
     it 'has defaulted value 5' do
       expect(subject.max_tokens).to be 5
     end
@@ -108,9 +112,26 @@ RSpec.describe User, type: :model do
     end
   end
 
+  describe 'token_duration' do
+    it 'must not be negative less tahn 15' do
+      subject.token_duration = 14
+      expect(subject).to_not be_valid
+    end
+
+    it 'must be more than 90 days' do
+      subject.token_duration = 7_776_001
+      expect(subject).to_not be_valid
+    end
+  end
+
   describe 'email' do 
     it 'must be given' do
       subject.email = nil
+      expect(subject).to_not be_valid
+    end
+
+    it 'must not be blank given' do
+      subject.email = ''
       expect(subject).to_not be_valid
     end
 

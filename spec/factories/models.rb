@@ -30,7 +30,7 @@ FactoryBot.define do
     user
 
     transient do
-      item_count { [(rand * 25).to_i, 1].max  }
+      item_count { [(rand * 25).to_i, 1].max }
     end
 
     order_items do |ord|

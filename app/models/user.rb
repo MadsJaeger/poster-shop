@@ -13,6 +13,7 @@ class User < ApplicationRecord
 
   has_many :jtis, dependent: :destroy
   has_many :orders, dependent: :restrict_with_error
+  has_many :order_items, dependent: :restrict_with_error
 
   validates :email, uniqueness: true, format: { with: EMAIL_REGEX }, allow_blank: false
   with_options if: :password_digest_changed? do |user|
@@ -21,7 +22,8 @@ class User < ApplicationRecord
     user.validates :password_confirmation, presence: true, allow_blank: false
   end
   validates :password_digest, presence: true, allow_blank: false
-  validates :max_tokens, numericality: { min: 0, max: 12 }
+  validates :max_tokens, numericality: { in: 1..12 }
+  validates :token_duration, numericality: { in: 15..7_776_000 }
 
   ##
   # Ensure emails always are downcased and stripped from leading and trailing spaces.
