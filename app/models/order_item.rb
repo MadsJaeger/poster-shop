@@ -17,6 +17,10 @@ class OrderItem < ApplicationRecord
   validates :product_id, uniqueness: { scope: %i[order_id user_id] }, if: :order_id_changed?
   # STATIC ATTRIBUTES: product_id, user_id, order_id, { price => if order_id}
 
+  def as_json(opts={})
+    opts.merge(include: %i[product price])
+  end
+
   def self.basket
     where(order_id: nil)
   end
