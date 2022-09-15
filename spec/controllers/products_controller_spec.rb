@@ -1,29 +1,9 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require_relative 'authorized'
 
 RSpec.describe ProductsController, type: :controller do
-  def make_token
-    @token = Authentication::JsonWebToken.create(@user, OpenStruct.new(env: {'HTTP_USER_AGENT' => 'Rails Testing'}))
-  end
-
-  before :all do
-    @user = User.create(
-      name: 'Admin user',
-      admin: true,
-      email: 'admin@user.here',
-      password: '!Secure1',
-      password_confirmation: '!Secure1',
-      max_tokens: 1,
-      token_duration: 60,
-    )
-    make_token
-  end
-
-  before :each do
-    request.headers['Authorization'] = @token
-  end
-
   let(:valid_attributes) {
     {
       name: 'Test',
@@ -175,7 +155,7 @@ RSpec.describe ProductsController, type: :controller do
   describe 'Rights: non admins cant' do
     before :all do
       @user.admin = false
-      make_token
+      make_token(@user)
     end
 
     it 'create' do
@@ -194,9 +174,5 @@ RSpec.describe ProductsController, type: :controller do
       delete :destroy, params: { id: product.to_param }
       expect(response).to have_http_status(:forbidden)
     end
-  end
-
-  after :all do
-    @user.destroy!
   end
 end
