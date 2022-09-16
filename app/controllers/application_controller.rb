@@ -7,6 +7,10 @@ class ApplicationController < ActionController::API
     render json: { error: e.message }, status: 404
   end
 
+  rescue_from ActiveModel::RangeError do |e|
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
   before_action :authenticate!
 
   ## CRUD ACTIONS ##
@@ -30,7 +34,6 @@ class ApplicationController < ActionController::API
   end
 
   def update
-    biding.pry unless params[:id]
     if item.update(item_params)
       render json: @item
     else
