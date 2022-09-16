@@ -1,9 +1,8 @@
 class ProductsController < ApplicationController
   before_action :authenticate_admin!, only: %i[create update destroy]
 
-  # Determine wheter or not products wihtout prices should be returned!
-  def index
-    render json: Product.eager_load(:price)
+  def show
+    render json: item.as_json(include: :prices)
   end
 
   def permitted_params
