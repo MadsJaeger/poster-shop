@@ -54,12 +54,17 @@ RSpec.describe Price, type: :model do
       subject.value = 1_000_000
       expect(subject).to_not be_valid
     end
+  end
 
-    it 'cant destroy when order_items exists' do
-      subject.save!
-      create(:order_item, product: @product)
-      expect(subject.destroy).to be false
-    end
+  it 'saving copies value to product' do
+    subject.save
+    expect(@product.price).to eq subject.value
+  end
+
+  it 'removing all prices sets price on product to nil' do
+    subject.save
+    subject.destroy
+    expect(@product.price).to be_nil
   end
 
   after :all do

@@ -27,13 +27,12 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_14_140417) do
     t.bigint "order_id"
     t.bigint "user_id", null: false
     t.bigint "product_id", null: false
-    t.integer "amount"
-    t.bigint "price_id", null: false
+    t.integer "amount", default: 0, null: false
+    t.decimal "price", precision: 8, scale: 2, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["order_id", "user_id", "product_id"], name: "index_order_items_on_order_id_and_user_id_and_product_id", unique: true
     t.index ["order_id"], name: "index_order_items_on_order_id"
-    t.index ["price_id"], name: "index_order_items_on_price_id"
     t.index ["product_id"], name: "index_order_items_on_product_id"
     t.index ["user_id"], name: "index_order_items_on_user_id"
   end
@@ -58,6 +57,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_14_140417) do
   create_table "products", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
+    t.decimal "price", precision: 8, scale: 2
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_products_on_name"
@@ -79,7 +79,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_14_140417) do
   end
 
   add_foreign_key "order_items", "orders"
-  add_foreign_key "order_items", "prices"
   add_foreign_key "order_items", "products"
   add_foreign_key "order_items", "users"
   add_foreign_key "orders", "users"

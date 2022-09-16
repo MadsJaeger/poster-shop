@@ -23,23 +23,30 @@ RSpec.describe Product, type: :model do
     end
   end
 
-  it '#with_prices only returns records with pricing' do
-    subject.prices.build(from: DateTime.now - 1.second, value: rand)
-    subject.save!
-    described_class.create!(name: 'Another')
-    expect(described_class.with_prices.count).to eq(Price.select(:product_id).distinct.count)
-    expect(described_class.count).to be > described_class.with_prices.count
-  end
-
-  it '.price the last price' do
-    (0..2).each do |i|
-      subject.prices.build(
-        from: DateTime.now - (i + 1).seconds,
-        value: i + 1
-      )
+  describe 'pricing' do
+    before :each do
+      subject.save!
     end
-    subject.save!
-    expect(subject.price).to eq subject.prices[0]
-    expect(subject.price.value.to_i).to be 1
+
+    it '.price is blank' do
+      expect(subject.price).to be_blank
+    end
+
+    it 'creating a price adds .price' do
+      subject.prices.create(value: 1, from: DateTime.now)
+      expect(subject.price.to_s).to eq '1.0'
+    end
+
+    it 'creating past prices does not update price' do
+      subject.prices.create(value: 1, from: DateTime.now)
+      subject.prices.create(value: 2, from: DateTime.now-1.hour)
+      expect(subject.price.to_s).to eq '1.0'
+    end
+
+    it 'crating multiple prices updates price to most recent' do
+      subject.prices.create(value: 1, from: DateTime.now - (1/1_000.0).seconds)
+      subject.prices.create(value: 2, from: DateTime.now)
+      expect(subject.price.to_s).to eq '2.0'
+    end
   end
 end

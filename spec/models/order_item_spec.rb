@@ -50,6 +50,11 @@ RSpec.describe OrderItem, type: :model do
       expect(subject).to_not be_valid
     end
 
+    it 'price cannot be blank' do
+      subject.price = nil
+      expect(subject).to_not be_valid
+    end
+
     it 'cannot duplicate product_id per user basket item' do
       subject.save
       evil_twin = build(:order_item, user: @user, product: @product)
@@ -80,7 +85,7 @@ RSpec.describe OrderItem, type: :model do
       expect(item.product).to be_nil
 
       item.product = @product
-      expect(item.price).to be @product.price
+      expect(item.price).to eq @product.price
 
       item.product = nil
       expect(item.price).to be_nil
@@ -88,12 +93,13 @@ RSpec.describe OrderItem, type: :model do
     
     it 'update_price resolves to most recent price' do
       new_price = create(:price, from: DateTime.now, product: @product)
-      @product.reload
-      expect(@product.price).to eq new_price
-      
       subject.update_price
-      expect(subject.price).to eq new_price
+      expect(subject.price).to eq new_price.value
     end
+  end
+
+  it 'value is product if price and amount' do
+    expect(subject.value).to eq subject.price * subject.amount
   end
 
   after :all do
