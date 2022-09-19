@@ -28,7 +28,7 @@ module Api::V1
     def create
       @item = self.class.model.new(item_params)
       if @item.save
-        render json: @item, status: :created, location: @item
+        render json: @item, status: :created, location: location
       else
         render json: @item.errors, status: :unprocessable_entity
       end
@@ -91,6 +91,14 @@ module Api::V1
     # leading and trailing space
     def sanitize_params(parameters, keys)
       parameters.permit(*keys).to_h.strip_strings!.nilify_blanks!.deep_symbolize_keys
+    end
+
+    ##
+    # Gives a url for current @item 
+    def location
+      namespace = self.class.module_parent.name.underscore.gsub('/', '_')
+      helper = "#{namespace}_#{self.class.model_name}_url"
+      respond_to?(helper) ? send(helper, @item) : nil
     end
 
     private

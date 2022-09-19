@@ -10,10 +10,6 @@ class Product < ApplicationRecord
 
   validates :name, presence: true, allow_blank: false
 
-  def as_json(opts = {})
-    super(**opts.deep_merge({ include: :price }))
-  end
-
   ##
   # Takes the most recent prices and stores on self.
   # update_column(price, updated_at) could be used instead of save

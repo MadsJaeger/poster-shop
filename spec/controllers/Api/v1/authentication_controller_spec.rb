@@ -1,5 +1,10 @@
 require 'rails_helper'
 
+##
+# HELP WANTED! running this spec like `spec .../controllers/*`
+# runs all controllers and automatically loadd *authorized*
+# inducing test failutre. Running in singularity works as expected
+#
 RSpec.describe Api::V1::AuthenticationController, type: :controller do
   def sign_in
     @response = post :sign_in, params: { user: { email: @user[:email], password: @user[:password] } }
@@ -8,7 +13,7 @@ RSpec.describe Api::V1::AuthenticationController, type: :controller do
     request.headers['Authorization'] = @token
   end
 
-  before :all do 
+  before :all do
     @user = {
       name: 'Nick Man',
       email: 'test@mail.here',

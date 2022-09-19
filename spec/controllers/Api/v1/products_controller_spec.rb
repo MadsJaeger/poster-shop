@@ -1,21 +1,21 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require_relative '../../authorized'
+require_relative 'authorized'
 
 RSpec.describe Api::V1::ProductsController, type: :controller do
-  let(:valid_attributes) {
+  let :valid_attributes do
     {
       name: 'Test',
       description: 'A poster of a contented programmer!'
     }
-  }
+  end
 
-  let(:invalid_attributes) {
+  let :invalid_attributes do
     {
       name: nil
     }
-  }
+  end
 
   describe 'GET #index' do
     it 'returns a success response' do
@@ -35,7 +35,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
       end
 
       expect(json_product.keys).to include('price')
-      expect(json_product['price']['value'].to_i).to be 5
+      expect(json_product['price'].to_i).to be 5
     end
   end
 
@@ -45,7 +45,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
       get :show, params: { id: product.to_param }
       expect(response).to be_successful
     end
-    
+
     it 'returns 404 on bad :id' do
       get :show, params: { id: 0 }
       expect(response).to have_http_status(404)
@@ -64,7 +64,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         post :create, params: { product: valid_attributes }
         expect(response).to have_http_status(:created)
         expect(response.content_type).to eq('application/json; charset=utf-8')
-        expect(response.location).to eq(product_url(Product.last))
+        expect(response.location).to eq(api_v1_product_url(Product.last))
       end
     end
 

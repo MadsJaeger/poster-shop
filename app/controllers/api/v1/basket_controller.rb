@@ -32,7 +32,7 @@ module Api::V1
 
     def checkout
       if order.checkout
-        render json: json_order, location: :checkout_confirm
+        render json: json_order, location: :api_v1_checkout_confirm
       else
         render json: { errors: order.errors }, status: :unprocessable_entity
       end
@@ -43,7 +43,7 @@ module Api::V1
         render json: json_order
       else
         order.update_columns(checkout_at: nil) if order.persisted?
-        render json: { errors: order.errors }, status: :unprocessable_entity, location: :checkout
+        render json: { errors: order.errors }, status: :unprocessable_entity, location: :api_v1_checkout
       end
     end
 
