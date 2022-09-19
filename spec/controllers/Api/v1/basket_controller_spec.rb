@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require_relative 'authorized'
+require_relative '../../authorized'
 
-RSpec.describe BasketController, type: :controller do
+RSpec.describe Api::V1::BasketController, type: :controller do
   def create_basket
     @basket = create_list(:order_item, 5, user: @user)
   end

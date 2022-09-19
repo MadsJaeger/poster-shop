@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require_relative 'authorized'
+require_relative '../../authorized'
 
-RSpec.describe ProductsController, type: :controller do
+RSpec.describe Api::V1::ProductsController, type: :controller do
   let(:valid_attributes) {
     {
       name: 'Test',

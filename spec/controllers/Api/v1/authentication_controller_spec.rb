@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe AuthenticationController, type: :controller do
+RSpec.describe Api::V1::AuthenticationController, type: :controller do
   def sign_in
     @response = post :sign_in, params: { user: { email: @user[:email], password: @user[:password] } }
     @token = @response['Authorization']
