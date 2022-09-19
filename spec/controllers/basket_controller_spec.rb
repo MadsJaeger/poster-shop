@@ -197,4 +197,79 @@ RSpec.describe BasketController, type: :controller do
       expect(OrderItem.where(user: @user).count).to be 0
     end
   end
+
+  describe 'GET #checkout, placing basket for checkout, getting size and value' do
+    describe 'checkout out invalid order' do
+      it 'with no basket, returns 422' do
+        get :checkout
+        expect(response).to have_http_status(422)
+      end
+
+      it 'with 0 amount basket returns 422' do
+        OrderItem.create(amount: 0, user: @user, product: @product)
+        get :checkout
+        expect(response).to have_http_status(422)
+      end
+    end
+
+    describe 'with a basket' do
+      before :each do
+        create_basket
+        get :checkout
+      end
+
+      it 'returns 200' do
+        expect(response).to have_http_status(200)
+      end
+
+      it 'has order as json' do
+        ord = Order.basket_for(@user).as_json
+        expect(body.slice(*ord.keys)).to eq(ord)
+      end
+
+      it 'has location to confirm' do
+        expect(response.location).to include('basket/checkout/confirm')
+      end
+
+      it 'repating checkout changes checkout_at' do
+        checkout_at_was = body['checkout_at']
+        get :checkout
+        expect(response).to have_http_status(200)
+        expect(body['checkout_at']). to be > checkout_at_was
+      end
+    end
+  end
+
+  describe 'PUT #confirm, confirming checkout, converting basket to order' do
+    it 'with new order returns 422' do
+      put :confirm
+      expect(response).to have_http_status(422)
+    end
+
+    describe 'with basket' do
+      before :each do
+        create_basket
+      end
+
+      it 'returns 422 when not checked out' do
+        put :confirm
+        expect(response).to have_http_status(422)
+      end
+
+      it 'returns 200 when checked out' do
+        get :checkout
+        put :confirm
+        expect(response).to have_http_status(200)
+        ord = Order.find(body['id']).as_json
+        expect(body.slice(*ord.keys)).to eq(ord)
+      end
+
+      it 'confirming again returns 422' do
+        get :checkout
+        put :confirm
+        put :confirm
+        expect(response).to have_http_status(422)
+      end
+    end
+  end
 end

@@ -30,9 +30,20 @@ class BasketController < ApplicationController
   alias remove destroy
 
   def checkout
+    if order.checkout
+      render json: json_order, location: :checkout_confirm
+    else
+      render json: { errors: order.errors }, status: :unprocessable_entity
+    end
   end
 
   def confirm
+    if order.confirm
+      render json: json_order
+    else
+      order.update_columns(checkout_at: nil) if order.persisted?
+      render json: { errors: order.errors }, status: :unprocessable_entity, location: :checkout
+    end
   end
 
   ##
