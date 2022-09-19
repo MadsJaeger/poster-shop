@@ -29,6 +29,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_14_140417) do
     t.bigint "product_id", null: false
     t.integer "amount", default: 0, null: false
     t.decimal "price", precision: 8, scale: 2, null: false
+    t.virtual "value", type: :decimal, precision: 10, scale: 2, as: "((amount)::numeric * price)", stored: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["order_id", "user_id", "product_id"], name: "index_order_items_on_order_id_and_user_id_and_product_id", unique: true
@@ -39,6 +40,10 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_14_140417) do
 
   create_table "orders", force: :cascade do |t|
     t.bigint "user_id", null: false
+    t.integer "size", default: 0, null: false, comment: "Count of items in order"
+    t.decimal "value", precision: 10, scale: 2, default: "0.0", null: false, comment: "Total value of order"
+    t.datetime "checkout_at", precision: nil, comment: "User lastly asked for checkout at"
+    t.datetime "confirmed_at", precision: nil, comment: "User confirmed checkout at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_orders_on_user_id"
