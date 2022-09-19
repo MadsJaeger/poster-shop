@@ -7,7 +7,7 @@ FactoryBot.define do
     password_confirmation { '!Secure1' }
   end
 
-  factory :product do |_prod|
+  factory :product do
     name { Faker::Name.name }
     description { Faker::Lorem.paragraph }
 
@@ -29,12 +29,10 @@ FactoryBot.define do
   factory :order do
     user
 
-    transient do
-      item_count { [(rand * 25).to_i, 1].max }
-    end
-
-    order_items do |ord|
-      Array.new(item_count) { association(:order_item, user: ord.user, product: build(:product)) }
+    trait :with_items do
+      after(:create) do |ord|
+        create_list(:order_item, 5, order: ord, user: ord.user)
+      end
     end
   end
 

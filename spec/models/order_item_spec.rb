@@ -10,20 +10,35 @@ RSpec.describe OrderItem, type: :model do
     build :order_item, product: @product, user: @user, order: nil
   end
 
-  it '#basket returns only items with nil order_id' do
-    expect(described_class.basket.to_sql).to include 'WHERE "order_items"."order_id" IS NULL'
-  end
-
   describe 'validation' do
     it 'is valid' do
       expect(subject).to be_valid
     end
 
-    it 'requires a user' do
+    it 'requires an user' do
       subject.user = nil
       expect(subject).to_not be_valid
     end
 
+    it 'requires a order' do
+      subject.user = nil
+      subject.valid?
+      err = subject.errors.find { |error| error.attribute == :order }
+      expect(err.type).to be :blank
+    end
+
+    it 'makes and order from user upon validation' do
+      subject.valid?
+      expect(subject.order).to be_instance_of Order
+      expect(subject.order.id).to be_blank
+    end
+
+    it 'finds existing order from user upon validation' do
+      ord = create(:order, user: @user)
+      subject.valid?
+      expect(subject.order).to eq ord
+    end
+  
     it 'requires a product' do
       subject.product = nil
       expect(subject).to_not be_valid
@@ -39,30 +54,19 @@ RSpec.describe OrderItem, type: :model do
       expect(subject).to_not be_valid
     end
 
-    it 'amount 0 with as basket item is valid' do
-      subject.amount = 0
-      expect(subject).to be_valid
-    end
-
-    it 'amount 0 is invalid if is ordered' do
-      subject.order = build(:order, item_count: 0)
-      subject.amount = 0
-      expect(subject).to_not be_valid
-    end
-
     it 'price cannot be blank' do
       subject.price = nil
       expect(subject).to_not be_valid
     end
 
-    it 'cannot duplicate product_id per user basket item' do
+    it 'cannot duplicate product_id per order_id basket item' do
       subject.save
-      evil_twin = build(:order_item, user: @user, product: @product)
+      evil_twin = build(:order_item, user: @user, product: @product, order_id: subject.order_id)
       expect(evil_twin).to_not be_valid
     end
 
     it 'a user cannot have have the same product twice in on order' do
-      order = create(:order, user: @user, item_count: 0, order_items: [subject])
+      order = create(:order, user: @user, items: [subject])
       expect(subject.order_id).to eq(order.id)
 
       evil_twin = build(:order_item, user: @user, product: @product, order: order)
@@ -70,12 +74,64 @@ RSpec.describe OrderItem, type: :model do
     end
 
     it 'a user may order the same product in different orders' do
-      create(:order, user: @user, item_count: 0, order_items: [subject])
+      order = create(:order, user: @user, items: [subject])
+      order.checkout
+      order.confirm
       expect(subject.id).to_not be_blank
 
-      twin_order = build(:order, user: @user, item_count: 0, order_items: [build(:order_item, user: @user, product: @product)])
+      twin_order = build(:order, user: @user, items: [build(:order_item, user: @user, product: @product)])
       expect(twin_order.save!).to be true
-      expect(twin_order.order_items.first).to be_valid
+      expect(twin_order.items.first).to be_valid
+    end
+
+    it 'cannot associate to order with alien user' do
+      subject.save
+      subject.user = create(:user)
+      expect(subject).to_not be_valid
+      expect(subject.errors.size).to be 2
+    end
+
+    it 'cannot change product of saved' do
+      subject.save
+      subject.product = create(:product)
+      expect(subject).to_not be_valid
+    end
+
+    it 'cannot change order of saved' do
+      subject.save
+      subject.order = create(:order)
+      expect(subject).to_not be_valid
+      expect(subject.errors.size).to be 2
+    end
+  end
+
+  describe 'saving' do
+    it 'saves associated build order' do
+      expect(subject.save).to be true
+      expect(subject.order_id).to_not be_blank
+    end
+
+    it 'updates order with size and value' do
+      expect(subject.save).to be true
+      expect(subject.order.value).to eq subject.value
+      expect(subject.order.size).to be 1
+      expect(subject.order.updated_at).to be > subject.updated_at
+    end
+
+    it 'creating sibling updates order' do
+      subject.save
+      sibling = create(:order_item, user: @user, order: subject.order)
+      expect(sibling.order.size).to eq 2
+      expect(sibling.order.value).to eq sibling.value + subject.value
+    end
+  end
+
+  describe 'destroying' do
+    it 'de-caches size on order' do
+      subject.save
+      subject.destroy
+      expect(subject.order.size).to eq 0
+      expect(subject.order.value).to eq 0
     end
   end
 
@@ -89,8 +145,8 @@ RSpec.describe OrderItem, type: :model do
 
       item.product = nil
       expect(item.price).to be_nil
-    end 
-    
+    end
+
     it 'update_price resolves to most recent price' do
       new_price = create(:price, from: DateTime.now, product: @product)
       subject.update_price
