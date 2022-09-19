@@ -1,12 +1,26 @@
 Rails.application.routes.draw do
-  # Authentication
-  post   'auth/sign_up',  controller: :authentication, action: :sign_up
-  post   'auth/sign_in',  controller: :authentication, action: :sign_in
-  delete 'auth/sign_out', controller: :authentication, action: :sign_out
-  get    'auth/ping',     controller: :authentication, action: :ping
+  scope 'auth', controller: :authentication do
+    post   'sign_up',  action: :sign_up
+    post   'sign_in',  action: :sign_in
+    delete 'sign_out', action: :sign_out
+    get    'ping',     action: :ping
+  end
 
   resources :products
   resources :prices
   resources :orders
   resources :order_items
+
+  scope '/basket', controller: :basket do
+    get    '', action: 'index'
+    delete '', action: :destroy
+    get    'checkout'
+    put    'checkout/confirm', action: :confirm
+    scope 'product' do
+      put    ':id',      action: :update
+      put    ':id/buy',  action: :buy
+      put    ':id/sell', action: :sell
+      delete ':id',      action: :remove
+    end
+  end
 end

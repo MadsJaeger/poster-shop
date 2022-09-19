@@ -12,7 +12,15 @@ RSpec.describe BasketController, type: :controller do
     create(:product, price_count: 1)
   end
 
-  describe 'GET #index' do
+  def body
+    response.parsed_body
+  end
+
+  def items
+    body['items']
+  end
+
+  describe 'GET #index, viewing users current or new basket order' do
     it 'returns a succesful response' do
       get :index
       expect(response).to be_successful
@@ -25,53 +33,70 @@ RSpec.describe BasketController, type: :controller do
 
       it 'returns the right items' do
         get :index
-        expect(response.parsed_body.count).to be 5
-        expect(response.parsed_body.map { |h| h['id'].to_i }.sort).to eq @basket.map(&:id).sort
+        expect(body['size']).to be 5
+        expect(items.count).to be 5
+        expect(items.map { |h| h['id'].to_i }.sort).to eq @basket.map(&:id).sort
       end
 
       it 'returns items only owned by this user' do
         create(:order_item)
         get :index
-        expect(response.parsed_body.map { |h| h['user_id'].to_i }).to all(eq @user.id)
+        expect(items.map { |h| h['user_id'].to_i }).to all(eq @user.id)
       end
 
       it 'it returns the most recent price' do
         prod = @basket[0].product
         prod.prices.create!(from: DateTime.now, value: 500)
         get :index
-        item = response.parsed_body.find { |h| h['product_id'].to_i == prod.id }
+        item = items.find { |h| h['product_id'].to_i == prod.id }
         expect(item['price'].to_f).to eq 500
       end
 
       after :all do
-        @basket.each(&:destroy)
+        @basket.each(&:destroy!)
+        @basket.first.order.destroy!
       end
     end
 
     describe 'without a basket' do
-      it 'returns an empty list' do
+      before :each do
         get :index
-        expect(response.parsed_body).to be_empty
+      end
+
+      it 'returns a new order' do
+        expect(body['id']).to be_nil
+      end
+
+      it 'has 0 size' do
+        expect(body['size']).to be 0
+      end
+
+      it 'has 0 value' do
+        expect(body['value'].to_f).to eq 0
+      end
+
+      it 'has empty items' do
+        expect(body['items']).to eq []
       end
     end
   end
 
-  describe 'DELETE #destroy' do
+  describe 'DELETE #destroy, destroying a users basker order along all items' do
     it 'without basket: responds 204' do
       delete :destroy
       expect(response).to have_http_status(204)
-      expect(OrderItem.basket.where(user: @user).count).to be 0
+      expect(Order.basket.where(user: @user).count).to be 0
     end
 
     it 'with basket: responds 204 and deletes basket' do
       create_basket
       delete :destroy
       expect(response).to have_http_status(204)
-      expect(OrderItem.basket.where(user: @user).count).to be 0
+      expect(Order.basket.where(user: @user).count).to be 0
     end
   end
 
-  describe 'PUT #update' do
+  describe 'PUT #update, setting amount for a product, i.e. placing in basket or emptying' do
     it 'creates new order item if it did not exist' do
       put :update, params: { id: product.id }
       prod = OrderItem.find_by!(user: @user, product: product)
@@ -116,7 +141,7 @@ RSpec.describe BasketController, type: :controller do
     end
   end
 
-  describe 'PUT #buy' do
+  describe 'PUT #buy, incerementing amount or placing product in basket' do
     it 'increments amount by 1 by default' do
       put :buy, params: { id: product.id }
       prod = OrderItem.find_by!(user: @user, product: product)
@@ -144,7 +169,7 @@ RSpec.describe BasketController, type: :controller do
     end
   end
 
-  describe 'PUT #sell' do
+  describe 'PUT #sell, decrementing amount or emptying item in basket' do
     it 'decrements amount by 1 by default' do
       prod = OrderItem.create!(user: @user, product: product, amount: 1)
       put :sell, params: { id: product.id }
@@ -159,7 +184,7 @@ RSpec.describe BasketController, type: :controller do
     end
   end
 
-  describe 'DELETE #remove' do
+  describe 'DELETE #remove, completely removing a product from basket' do
     it 'responds 204 on item not found' do
       delete :remove, params: { id: product.id }
       expect(response).to have_http_status(204)
@@ -169,7 +194,7 @@ RSpec.describe BasketController, type: :controller do
       OrderItem.create!(user: @user, product: product, amount: 1)
       delete :remove, params: { id: product.id }
       expect(response).to have_http_status(204)
-      expect(OrderItem.basket.where(user: @user).count).to be 0
+      expect(OrderItem.where(user: @user).count).to be 0
     end
   end
 end

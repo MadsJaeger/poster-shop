@@ -2,8 +2,8 @@ class BasketController < ApplicationController
   ##
   # Returns the current users basket
   def index
-    @items = OrderItem.basket.where(user: @current_user).eager_load(:product).each(&:update_price).each(&:save)
-    render json: @items
+    order.items.each(&:update_price).each(&:save)
+    render json: json_order
   end
 
   ##
@@ -38,11 +38,19 @@ class BasketController < ApplicationController
   ##
   # Clear current users basket
   def destroy
-    OrderItem.basket.where(user: @current_user).destroy_all
-    # Maybe resolve response from wheter or not all records where succesfully destroyed
+    order.items.destroy_all
+    order.destroy!
   end
 
   private
+
+  def order
+    @order ||= Order.includes(items: :product).basket_for(@current_user)
+  end
+
+  def json_order
+    @order.as_json(include: [items: { include: :product }])
+  end
 
   ##
   # Ensures item has at least 0 amount and saves
@@ -64,11 +72,11 @@ class BasketController < ApplicationController
   end
 
   def item
-    @item ||= OrderItem.basket.find_by(**item_identification) || OrderItem.new(**item_identification)
+    @item ||= OrderItem.find_by(**item_identification) || OrderItem.new(product: product, user: @current_user)
   end
 
   def item_identification
-    { product: product, user: @current_user }
+    { product: product, user: @current_user, order: order }
   end
 
   def item_params
