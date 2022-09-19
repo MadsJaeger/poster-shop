@@ -2,6 +2,7 @@
 
 require_relative 'authentication/failure_app'
 require_relative 'authentication/json_web_token'
+require_relative 'authentication/jwt_payload'
 require_relative 'authentication/password'
 
 ##

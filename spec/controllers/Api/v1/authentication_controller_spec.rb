@@ -7,9 +7,9 @@ require 'rails_helper'
 #
 RSpec.describe Api::V1::AuthenticationController, type: :controller do
   def sign_in
-    @response = post :sign_in, params: { user: { email: @user[:email], password: @user[:password] } }
-    @token = @response['Authorization']
-    @decoded  = JWT.decode(@token, nil, false)
+    post :sign_in, params: { user: { email: @user[:email], password: @user[:password] } }
+    @token = response['Authorization']
+    @decoded, _alg = JWT.decode(@token, nil, false)
     request.headers['Authorization'] = @token
   end
 
@@ -27,8 +27,8 @@ RSpec.describe Api::V1::AuthenticationController, type: :controller do
   describe 'POST #sign_up' do
     describe 'with valid data' do
       before :each do
-        @response = post :sign_up, params: { user: @user }
-        @decoded  = JWT.decode(@response['Authorization'], nil, false)
+        post :sign_up, params: { user: @user }
+        @decoded, _alg = JWT.decode(response['Authorization'], nil, false)
       end
 
       it 'creates a user' do
@@ -38,12 +38,11 @@ RSpec.describe Api::V1::AuthenticationController, type: :controller do
       end
 
       it 'sets jwt in response header' do
-        expect(@decoded[0]['user']['name']).to eq @user[:name]
+        expect(@decoded['user']['name']).to eq @user[:name]
       end
 
       it 'stores a JTI' do
-        jti        = @decoded[0]['jti']
-        jti_record = Jti.find(jti)
+        jti_record = Jti.find(@decoded['jti'])
         expect(jti_record.persisted?).to be true
       end
 
@@ -93,6 +92,7 @@ RSpec.describe Api::V1::AuthenticationController, type: :controller do
       ],
     }.each do |mesg, data| 
       it mesg do
+        
         expect( post(:sign_in, params: data[0]).status ).to be data[1]
       end
     end
@@ -103,21 +103,20 @@ RSpec.describe Api::V1::AuthenticationController, type: :controller do
       end
 
       it 'returns 200' do
-        expect(@response.status).to be 200
+        expect(response.status).to be 200
       end
 
       it 'sets authorization in header' do
-        expect(@response['Authorization']).to be_a String
+        expect(response['Authorization']).to be_a String
       end
 
       it 'issues a JTI' do
-        jti        = @decoded[0]['jti']
-        jti_record = Jti.find(jti)
+        jti_record = Jti.find(@decoded['jti'])
         expect(jti_record.persisted?).to be true
       end
 
       it 'has user in body' do
-        user = @response.parsed_body.symbolize_keys
+        user = response.parsed_body.symbolize_keys
         expect(user[:name]).to eq(@user[:name])
       end
 
