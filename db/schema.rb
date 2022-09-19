@@ -24,7 +24,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_14_140417) do
   end
 
   create_table "order_items", force: :cascade do |t|
-    t.bigint "order_id"
+    t.bigint "order_id", null: false
     t.bigint "user_id", null: false
     t.bigint "product_id", null: false
     t.integer "amount", default: 0, null: false

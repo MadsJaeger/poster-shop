@@ -13,6 +13,7 @@ class OrderItem < ApplicationRecord
   validates :user_id, numericality: { equal_to: ->(this) { this.order.user_id } }
 
   before_validation do
+    self.user  ||= order.user if order
     self.order ||= Order.basket_for(user) if user
   end
 
@@ -34,6 +35,11 @@ class OrderItem < ApplicationRecord
 
   def product=(other)
     super(other)
+    update_price
+  end
+
+  def product_id=(value)
+    super(value)
     update_price
   end
 end
