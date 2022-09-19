@@ -1,9 +1,17 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require_relative 'authorized'
 
 RSpec.describe Api::V1::BasketController, type: :controller do
+  before :all do
+    @user = guest
+    @token = create_token(@user)
+  end
+
+  before :each do 
+    request.headers['Authorization'] = @token
+  end
+
   def create_basket
     @basket = create_list(:order_item, 5, user: @user)
   end

@@ -1,9 +1,17 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require_relative 'authorized'
 
 RSpec.describe Api::V1::ProductsController, type: :controller do
+  before :all do
+    @user  = admin
+    @token = create_token(@user)
+  end
+
+  before :each do
+    request.headers['Authorization'] = @token
+  end
+
   let :valid_attributes do
     {
       name: 'Test',
@@ -154,8 +162,8 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
 
   describe 'Rights: non admins cant' do
     before :all do
-      @user.admin = false
-      make_token(@user)
+      @user = guest
+      @token = create_token(@user)
     end
 
     it 'create' do
