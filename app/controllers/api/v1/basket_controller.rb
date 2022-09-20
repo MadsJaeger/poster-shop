@@ -30,6 +30,8 @@ module Api::V1
     # :method: :remove => Completely remove an order item
     alias remove destroy
 
+    ##
+    # Checking out basket, to get finaly pricing and aknowledge beeing about to confirm
     def checkout
       if order.checkout
         render json: json_order, location: :api_v1_checkout_confirm
@@ -38,6 +40,8 @@ module Api::V1
       end
     end
 
+    ##
+    # Confirming a checkout out basket convering it to an order
     def confirm
       if order.confirm
         render json: json_order
