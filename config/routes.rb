@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       resources :prices
       resources :orders
       resources :order_items
+      resources :users
     
       scope '/basket', controller: :basket do
         get    '', action: 'index'
