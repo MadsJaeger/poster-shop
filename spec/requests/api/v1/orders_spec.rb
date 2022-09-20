@@ -59,7 +59,7 @@ RSpec.describe '/orders', type: :request do
 
   describe '/orders/:id' do
     before :each do
-      @order = create(:order)
+      @order = create(:order, :with_items)
       @uri = "orders/#{@order.id}"
     end
 
@@ -76,7 +76,11 @@ RSpec.describe '/orders', type: :request do
 
       it 'returns as_json' do
         get
-        expect(body).to eq @order.as_json
+        expect(body).to eq @order.as_json(include: [items: { include: :product }])
+        expect(body.keys).to include 'items'
+        expect(body['items'][0].keys).to include 'price'
+        expect(body['items'][0].keys).to include 'product'
+        expect(body['items'][0]['product'].keys).to include 'price'
       end
     end
 
@@ -94,14 +98,60 @@ RSpec.describe '/orders', type: :request do
 
     describe 'DELETE, destroys a order' do
       it 'returns 422 as items are given' do
-        create(:order_item, order: @order, user: nil)
         delete
         expect(response).to have_http_status(422)
       end
 
       it 'returns 204' do
+        @order.items.destroy_all
         delete
         expect(response).to have_http_status(204)
+      end
+    end
+  end
+
+  describe 'As guest/customer' do
+    before :all do
+      @user = guest
+      @token = sign_in(@user)
+      @uri = 'orders'
+    end
+
+    describe 'GET, #index' do
+      before :each do
+        2.times do
+          ord = create(:order, :with_items, user: @user)
+          ord.checkout
+          ord.confirm
+        end
+        get
+      end
+
+      it 'returns all ordered items' do
+        expect(body.size).to be 2
+      end
+
+      it 'responds 200' do
+        expect(response).to have_http_status(200)
+      end
+    end
+
+    describe 'GET, #show' do
+      before :each do
+        @own = create(:order, :with_items, user: @user)
+        @other = Order.basket_for(admin)
+        @other.save
+      end
+
+      it 'returns 403 for alien users order_items' do
+        get "orders/#{@other.id}"
+        expect(response).to have_http_status(403)
+      end
+
+      it 'returns 200 on own order item' do
+        get "orders/#{@own.id}"
+        expect(response).to have_http_status(200)
+        expect(body).to eq @own.as_json(include: [items: { include: :product }])
       end
     end
   end
