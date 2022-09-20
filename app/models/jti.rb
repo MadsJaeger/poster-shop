@@ -7,7 +7,9 @@
 #  2) Add ip column to track from where users login 
 class Jti < ApplicationRecord
   self.primary_key = :jti
-  belongs_to :user
+  belongs_to :user, optional: false
+  validates :agent, :jti, presence: true, allow_blank: false
+  validates :exp, comparison: { greater_than: ->(_){ DateTime.now } }, allow_blank: false
 
   after_create do
     delete_elder_siblings!

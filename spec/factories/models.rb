@@ -45,4 +45,11 @@ FactoryBot.define do
       item.product.save
     end
   end
+
+  factory :jti do
+    user
+    jti { Faker::Alphanumeric.alpha }
+    exp { DateTime.now + (rand * 10).days }
+    agent { Faker::Name.name }
+  end
 end
