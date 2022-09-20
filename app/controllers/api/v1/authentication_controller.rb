@@ -9,7 +9,7 @@ module Api::V1
     end
 
     ##
-    # TODO: Ensure not to tell users once email is taken
+    # Creating a user
     def sign_up
       @user = User.new(**params.require(:user).permit(*USER_PARAMS))
 
@@ -21,8 +21,10 @@ module Api::V1
       end
     end
 
+    ##
+    # Authenticating with email and password
     def sign_in
-      params.require(:user).require([:email, :password])
+      params.require(:user).require(%i[email password])
       @user = warden.authenticate!(:pwd)
       authenticate!
       render json: @user

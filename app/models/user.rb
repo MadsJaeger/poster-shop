@@ -15,7 +15,9 @@ class User < ApplicationRecord
   has_many :orders, dependent: :restrict_with_error
   has_many :order_items, dependent: :restrict_with_error
 
-  validates :email, uniqueness: true, format: { with: EMAIL_REGEX }, allow_blank: false
+  validates :email, format: { with: EMAIL_REGEX }, allow_blank: false
+  # On email unqieness do not disclose validation error.
+  validates :email, uniqueness: { message: 'Email is invalid. Contact support' }
   with_options if: :password_digest_changed? do |user|
     user.validates :password, format: { with: PASSWORD_REGX }
     user.validates :password, confirmation: { case_sensitive: true }

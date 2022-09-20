@@ -59,7 +59,7 @@ RSpec.describe Api::V1::AuthenticationController, type: :controller do
       it 'with taken email does not disclose it' do
         post :sign_up, params: { user: @user }
         res = post :sign_up, params: { user: @user }
-        expect(res.parsed_body.keys).to_not include('email')
+        expect(res.parsed_body['email'].join('')).to eq 'Email is invalid. Contact support'
       end
     end
   end
