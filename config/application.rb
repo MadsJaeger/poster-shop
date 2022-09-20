@@ -26,7 +26,9 @@ module PosterShop
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
-    
+
+    config.active_job.queue_adapter = :delayed_job
+
     # Register warden for authentication middleware
     Warden::Strategies.add(:pwd, Authentication::Password)
     Warden::Strategies.add(:jwt, Authentication::JsonWebToken)
