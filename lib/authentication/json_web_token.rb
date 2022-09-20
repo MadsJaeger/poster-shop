@@ -34,7 +34,7 @@ module Authentication
         payload = JwtPayload.new(user)
         token = JWT.encode(payload.as_json, secret, ALGORITHM)
 
-        Jti.create(
+        Jti.create!(
           user_id: user.id,
           jti: payload.jti,
           exp: payload.exp,
